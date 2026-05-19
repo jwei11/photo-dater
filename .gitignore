@@ -1,0 +1,45 @@
+# Python
+__pycache__/
+*.py[cod]
+*$py.class
+*.so
+.Python
+build/
+dist/
+*.egg-info/
+.eggs/
+
+# Virtual environments
+.venv/
+venv/
+env/
+photo-dating-env/
+
+# Dataset (large; regenerate with src/scraper.py and src/preprocess.py)
+data/raw/
+data/metadata.csv
+data/processed/*
+!data/processed/.gitkeep
+
+# Partial/failed downloads
+*.tmp
+
+# Logs
+*.log
+scrape.log
+
+# OS / editor
+.DS_Store
+Thumbs.db
+.idea/
+.vscode/
+*.swp
+*~
+
+# Jupyter
+.ipynb_checkpoints/
+
+# ML artifacts (add paths here as training scripts land)
+checkpoints/
+runs/
+wandb/
