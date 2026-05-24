@@ -34,7 +34,7 @@ Training from scratch on ~7,500 images would primarily teach a model to overfit.
 photo-dater/
 ├── data/
 │   ├── raw/              # Downloaded LOC images, organized by decade
-│   └── processed/        # Grayscale, resized 224×224
+│   └── processed/        # Grayscale, resized 300×300
 ├── src/
 │   ├── scraper.py        # Library of Congress API ingestion
 │   ├── preprocess.py     # Cleaning, grayscale conversion, resizing

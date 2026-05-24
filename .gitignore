@@ -18,6 +18,8 @@ photo-dating-env/
 # Dataset (large; regenerate with src/scraper.py and src/preprocess.py)
 data/raw/
 data/metadata.csv
+data/processed_metadata.csv
+data/preprocess_failures.csv
 data/processed/*
 !data/processed/.gitkeep
 
