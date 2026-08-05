@@ -6,6 +6,7 @@ Applies weighted sampling to correct for decade imbalance (pre-1900 underreprese
 """
 
 import csv
+import random
 from pathlib import Path
 
 import torch
@@ -15,8 +16,15 @@ from PIL import Image
 
 PROCESSED_META_FILE = Path("data/processed_metadata.csv")
 
+# Fixed on purpose, and deliberately NOT the same knob as train.py's --seed.
+# Every run has to see the same test set: if the split moved with the training
+# seed, a multi-seed comparison would score each run on photos that other runs
+# had trained on.
+SPLIT_SEED = 42
+
 DECADES = list(range(1850, 2000, 10))
-DECADE_TO_IDX = {d: i for i, d in enumerate(DECADES)}  # 1850→0, 1860→1, … 1990→14
+DECADE_TO_IDX = {d: i for i, d in enumerate(DECADES)}  # 1850->0, 1860->1, ... 1990->14
+IDX_TO_DECADE = {i: d for d, i in DECADE_TO_IDX.items()}
 
 # Normalization stats for single-channel (grayscale) ImageNet fine-tuning.
 # Using the luminance-weighted mean/std derived from ImageNet RGB stats.
@@ -40,7 +48,20 @@ def load_metadata(meta_file: Path = PROCESSED_META_FILE) -> list[dict]:
     if not meta_file.exists():
         raise FileNotFoundError(f"{meta_file} not found — run src/preprocess.py first")
     with open(meta_file, newline="", encoding="utf-8") as f:
-        return list(csv.DictReader(f))
+        rows = list(csv.DictReader(f))
+
+    # The scraper can write the same item twice on retry. Dedupe by filename before
+    # splitting: one duplicate landing on either side of a boundary would put the
+    # same photograph in both train and test.
+    seen, unique = set(), []
+    for row in rows:
+        if row["filename"] not in seen:
+            seen.add(row["filename"])
+            unique.append(row)
+
+    if len(unique) != len(rows):
+        print(f"load_metadata: dropped {len(rows) - len(unique)} duplicate row(s)")
+    return unique
 
 
 class PhotoDateDataset(Dataset):
@@ -75,13 +96,24 @@ def make_weighted_sampler(rows: list[dict]) -> WeightedRandomSampler:
     return WeightedRandomSampler(weights, num_samples=len(weights), replacement=True)
 
 
-def train_val_split(
+def train_val_test_split(
     rows: list[dict],
     val_fraction: float = 0.15,
-    seed: int = 42,
-) -> tuple[list[dict], list[dict]]:
-    """Stratified split: hold out val_fraction from each decade."""
-    import random
+    test_fraction: float = 0.15,
+    seed: int = SPLIT_SEED,
+) -> tuple[list[dict], list[dict], list[dict]]:
+    """
+    Stratified 70/15/15 split, holding out both fractions from each decade.
+
+        train — the only rows that produce gradient updates
+        val   — used to pick the best epoch during training
+        test  — scored once, at the end, for the numbers we report
+
+    Keeping val and test separate matters: `best.pt` is chosen as the argmax of
+    ~20 noisy per-epoch scores, so the winning score is inflated by whichever
+    checkpoint got luckiest on that particular set. Reporting on test — which
+    played no part in choosing anything — removes that bias.
+    """
     rng = random.Random(seed)
 
     by_decade: dict[int, list[dict]] = {}
@@ -89,12 +121,21 @@ def train_val_split(
         d = int(row["decade"])
         by_decade.setdefault(d, []).append(row)
 
-    train_rows, val_rows = [], []
-    for decade_rows in by_decade.values():
+    train_rows, val_rows, test_rows = [], [], []
+    # Sorted by decade so the split is identical regardless of CSV row order.
+    for decade, decade_rows in sorted(by_decade.items()):
+        n = len(decade_rows)
+        if n < 3:
+            raise ValueError(f"decade {decade}s has only {n} image(s) — cannot split three ways")
+
         shuffled = decade_rows[:]
         rng.shuffle(shuffled)
-        n_val = max(1, int(len(shuffled) * val_fraction))
-        val_rows.extend(shuffled[:n_val])
-        train_rows.extend(shuffled[n_val:])
 
-    return train_rows, val_rows
+        n_val = max(1, int(n * val_fraction))
+        n_test = max(1, int(n * test_fraction))
+
+        val_rows.extend(shuffled[:n_val])
+        test_rows.extend(shuffled[n_val:n_val + n_test])
+        train_rows.extend(shuffled[n_val + n_test:])
+
+    return train_rows, val_rows, test_rows
