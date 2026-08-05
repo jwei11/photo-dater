@@ -21,6 +21,7 @@ Output structure:
 
 import csv
 import re
+import shutil
 import time
 import requests
 from pathlib import Path
@@ -132,9 +133,14 @@ def download_image(image_url: str, save_path: Path) -> bool:
             if not is_valid_image_file(tmp):
                 tmp.unlink(missing_ok=True)
                 raise ValueError("download too small or not an image")
-            tmp.replace(save_path)
-            return True
-        except (requests.RequestException, ValueError, OSError) as e:
+            for move_attempt in range(3):
+                try:
+                    shutil.move(str(tmp), str(save_path))
+                    return True
+                except PermissionError:
+                    time.sleep(0.5 * (move_attempt + 1))
+            raise PermissionError(f"could not move {tmp} to {save_path}")
+        except (requests.RequestException, ValueError, OSError, PermissionError) as e:
             tmp.unlink(missing_ok=True)
             wait = 2 ** attempt
             print(f"  Image download failed ({e}), retry in {wait}s...")
@@ -342,16 +348,16 @@ def main():
 
         for decade in DECADES:
             if counts.get(decade, 0) >= TARGET_PER_DECADE:
-                print(f"\nSkipping {decade}s — already at {counts[decade]} images")
+                print(f"\nSkipping {decade}s - already at {counts[decade]} images")
                 continue
             scrape_decade(decade, writer, csvfile, counts, seen)
 
-    print("\n── Scraping complete ──────────────────────────────────────")
+    print("\n-- Scraping complete -------------------------------------")
     total = 0
     for decade in DECADES:
         n = counts.get(decade, 0)
-        bar = "█" * (n // 20)
-        status = "✓" if n >= TARGET_PER_DECADE else "…"
+        bar = "#" * (n // 20)
+        status = "OK" if n >= TARGET_PER_DECADE else "..."
         print(f"  {decade}s: {n:>4}/{TARGET_PER_DECADE} {status}  {bar}")
         total += n
     print(f"\n  Total: {total} images")

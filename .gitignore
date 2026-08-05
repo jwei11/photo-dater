@@ -43,5 +43,6 @@ Thumbs.db
 
 # ML artifacts (add paths here as training scripts land)
 checkpoints/
+results/
 runs/
 wandb/
