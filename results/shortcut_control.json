@@ -1,0 +1,79 @@
+{
+  "split": "test",
+  "seeds": [
+    1,
+    2,
+    3,
+    4,
+    5
+  ],
+  "n_samples": 1125,
+  "chance": 0.0667,
+  "probes": {
+    "baseline": {
+      "accuracy_mean": 0.6302,
+      "accuracy_std": 0.0132,
+      "retained_fraction": 1.0
+    },
+    "downsample_32": {
+      "accuracy_mean": 0.1593,
+      "accuracy_std": 0.0171,
+      "retained_fraction": 0.164
+    },
+    "downsample_16": {
+      "accuracy_mean": 0.0964,
+      "accuracy_std": 0.0134,
+      "retained_fraction": 0.053
+    },
+    "downsample_8": {
+      "accuracy_mean": 0.0711,
+      "accuracy_std": 0.0045,
+      "retained_fraction": 0.008
+    },
+    "patch_shuffle_5": {
+      "accuracy_mean": 0.2228,
+      "accuracy_std": 0.0218,
+      "retained_fraction": 0.277
+    },
+    "patch_shuffle_10": {
+      "accuracy_mean": 0.1056,
+      "accuracy_std": 0.0156,
+      "retained_fraction": 0.069
+    },
+    "center_crop_70": {
+      "accuracy_mean": 0.3376,
+      "accuracy_std": 0.0077,
+      "retained_fraction": 0.481
+    },
+    "center_only_70": {
+      "accuracy_mean": 0.3109,
+      "accuracy_std": 0.0569,
+      "retained_fraction": 0.433
+    },
+    "border_only_70": {
+      "accuracy_mean": 0.3307,
+      "accuracy_std": 0.0877,
+      "retained_fraction": 0.468
+    },
+    "center_only_90": {
+      "accuracy_mean": 0.5067,
+      "accuracy_std": 0.014,
+      "retained_fraction": 0.781
+    },
+    "border_only_90": {
+      "accuracy_mean": 0.1202,
+      "accuracy_std": 0.0465,
+      "retained_fraction": 0.095
+    },
+    "center_only_95": {
+      "accuracy_mean": 0.5691,
+      "accuracy_std": 0.0071,
+      "retained_fraction": 0.891
+    },
+    "border_only_95": {
+      "accuracy_mean": 0.0754,
+      "accuracy_std": 0.0132,
+      "retained_fraction": 0.015
+    }
+  }
+}

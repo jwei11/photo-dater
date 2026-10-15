@@ -1,0 +1,13 @@
+{
+  "split": "test",
+  "n_runs": 5,
+  "accuracy": {
+    "mean": 0.63022,
+    "std": 0.01323
+  },
+  "mean_decade_error_years": {
+    "mean": 9.42,
+    "std": 0.469
+  },
+  "n_samples": 1125
+}

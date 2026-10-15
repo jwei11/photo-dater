@@ -41,8 +41,13 @@ Thumbs.db
 # Jupyter
 .ipynb_checkpoints/
 
-# ML artifacts (add paths here as training scripts land)
+# ML artifacts
+# Model weights are ~118 MB each and regenerate from src/train.py.
+# results/ IS tracked: the figures and metrics are small, and the README
+# references them, so they should render for anyone browsing the repo.
 checkpoints/
-results/
 runs/
 wandb/
+
+# Local editor state (launch.json is tracked; the permission cache is not)
+.claude/settings.local.json

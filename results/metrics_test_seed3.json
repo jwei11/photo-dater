@@ -1,0 +1,11 @@
+{
+  "split": "test",
+  "tag": "seed3",
+  "accuracy": 0.6462,
+  "accuracy_stderr": 0.0143,
+  "mean_decade_error_years": 9.28,
+  "hardest_decade_pair": "1980s -> 1990s",
+  "confusion_count": 19,
+  "n_samples": 1125,
+  "checkpoint": "checkpoints\\best_seed3.pt"
+}
