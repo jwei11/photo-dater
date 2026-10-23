@@ -78,6 +78,27 @@ The empirical case for bothering: across 5 seeds, **validation ranking barely pr
 
 **Variance is reported, not hidden.** A single accuracy figure on 1,125 images carries ±1.4 points of standard error, so two runs differing by a point are indistinguishable. Five seeds give ±1.3 points of spread — about what sampling noise alone predicts, which is itself evidence the training process is stable.
 
+### Is the test split clean?
+
+Filename disjointness is not content disjointness — archives hold the same photograph under several item ids, as alternate scans or plates from one sitting. [`src/leakage_check.py`](src/leakage_check.py) audits for it.
+
+| Closest training match | Test images | Accuracy there | Accuracy excluding them |
+|---|---|---|---|
+| identical pixels | 0 (0.0%) | — | — |
+| Hamming ≤ 2 | 4 (0.4%) | 0.750 | 0.630 |
+| Hamming ≤ 5 | 33 (2.9%) | 0.800 | 0.625 |
+| Hamming ≤ 8 | 218 (19.4%) | 0.720 | 0.609 |
+
+No test image is byte-identical or pixel-identical to any training image. The near-duplicates that do exist are mostly sequential LOC item ids from a single sitting, and excluding them moves accuracy from 63.0% to 62.5%.
+
+The diagnostic that settles it: memorised duplicates would score near 1.0 on the flagged subset. They score 0.72–0.80, which is what merely *similar* photographs look like. Even at Hamming ≤ 8 — a radius so loose it flags a fifth of the test set, far more than could plausibly be duplicates — the flagged images score 0.72, not 1.0.
+
+```bash
+python src/leakage_check.py --impact
+```
+
+Full output: [`results/leakage_audit.json`](results/leakage_audit.json).
+
 ## Pipeline
 
 ```
@@ -112,8 +133,9 @@ photo-dater/
 │   ├── evaluate.py           # Metrics, confusion matrix, per-split scoring
 │   ├── aggregate_seeds.py    # Mean ± std across seeds
 │   ├── shortcut_control.py   # Occlusion / downsample / shuffle probes
+│   ├── leakage_check.py      # Duplicate + near-duplicate audit of the split
 │   └── gradcam.py            # Grad-CAM implementation
-├── tests/                    # Split integrity, dedup, probe geometry
+├── tests/                    # Split integrity, dedup, probe + hash behaviour
 ├── results/                  # Metrics, figures, heatmaps (tracked)
 ├── app.py                    # Gradio demo
 ├── requirements.txt
@@ -136,6 +158,7 @@ python src/train.py          # Fine-tune (~11 min on a 2070 Super)
 
 python src/evaluate.py --split test   # Report metrics
 python src/shortcut_control.py        # Run the shortcut controls
+python src/leakage_check.py --impact  # Audit the split for duplicates
 python src/gradcam.py                 # Sample heatmaps
 python app.py                         # Launch the demo
 ```

@@ -1,0 +1,39 @@
+{
+  "n_train": 5250,
+  "n_val": 1125,
+  "n_test": 1125,
+  "exact_file_duplicate_groups": 1,
+  "exact_pixel_duplicate_groups": 1,
+  "near_duplicates": {
+    "hamming_<=0": {
+      "count": 0,
+      "share": 0.0
+    },
+    "hamming_<=2": {
+      "count": 4,
+      "share": 0.0036
+    },
+    "hamming_<=5": {
+      "count": 33,
+      "share": 0.0293
+    },
+    "hamming_<=8": {
+      "count": 218,
+      "share": 0.1938
+    }
+  },
+  "impact": {
+    "n_flagged": 33,
+    "flagged_accuracy": 0.8,
+    "clean_accuracy": 0.6251,
+    "full_accuracy": 0.6302,
+    "radius": 5,
+    "seeds": [
+      1,
+      2,
+      3,
+      4,
+      5
+    ]
+  }
+}
