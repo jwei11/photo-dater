@@ -38,7 +38,7 @@ Per-seed test accuracy: 62.0, 62.7, 64.6, 64.2, 61.6.
 | 1880s | 0.64 | | 1930s | 0.75 | | 1980s | **0.36** |
 | 1890s | 0.75 | | 1940s | 0.71 | | 1990s | 0.52 |
 
-Performance declines steadily from the oldest decades to the 1970s–80s, then recovers slightly. Early photographic processes carry distinctive signatures — mounts, studio poses, albumen tonality — while late-century photography converted to grayscale looks much alike across adjacent decades. Nearly all errors are off-by-one-decade, which is why mean decade error stays under 10 years despite 37% of predictions being wrong.
+Performance declines steadily from the oldest decades to the 1970s–80s, then recovers slightly. Early photographic processes carry distinctive signatures — mounts, studio poses, albumen tonality — while late-century photography converted to grayscale looks much alike across adjacent decades. Errors are not uniformly adjacent: 81.3% of predictions land within one decade, but when the model is wrong it misses by 2.55 decades on average and 10% of all predictions are off by three decades or more. That tail, not the near misses, is what holds mean decade error at 9.4 years.
 
 ## Did it actually learn history?
 
@@ -165,6 +165,8 @@ python src/aggregate_seeds.py --split test
 **Adjacent modern decades are barely separable.** 1970s and 1980s sit at F1 0.34 and 0.36. In grayscale, a 1978 snapshot and a 1983 snapshot often carry no distinguishing cue a human could name either.
 
 **One archive, one country.** Everything comes from the Library of Congress, so the model has learned what American photographs in one institution's collection look like by decade. Geographic and institutional bias is unmeasured.
+
+**Collection-level confounding is plausible.** LOC images arrive in curated collections that often share a date range *and* a photographer, studio, subject matter, and scanning run, so the model may partly be learning "this collection's look" rather than "this decade's look." A duplicate audit found no exact test/train overlap and only 2.9% of test images within Hamming distance 5 of a training image (removing them costs 0.5 points), but 19.4% fall within distance 8 — a sign of real internal homogeneity. This would not inflate the test number; it would mean the model generalizes worse to non-LOC photographs than 63% suggests.
 
 **Probe design is not free of artifacts.** The occlusion controls introduce a masked region that is itself out of distribution. An earlier version using flat mid-gray fill produced 8–9× the seed variance of every other probe; switching to per-image mean fill resolved it. The thin-ring results are stable (±0.007–0.013), but occlusion remains the least clean instrument here.
 
